@@ -2,9 +2,10 @@ package main
 
 import (
 	"database/sql"
-	"fmt"
 	"log"
 	"net/http"
+	"os"
+	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -17,8 +18,18 @@ var (
 
 var chanUpdateURL = make(chan bool)
 
+var servLoggerINFO *log.Logger
+
 func main() {
-	fmt.Println("Starting database driver...")
+	f, err := os.OpenFile("logs/webServ.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		log.Println(err)
+	}
+	defer f.Close()
+
+	servLoggerINFO = log.New(f, "INFO ", log.LstdFlags)
+
+	servLoggerINFO.Println("Starting database driver...")
 	db, err := sql.Open("mysql", "app:123456@tcp(localhost:3306)/")
 	if err != nil {
 		log.Fatal(err)
@@ -29,18 +40,25 @@ func main() {
 	}
 
 	go updateURL(db)
+	servLoggerINFO.Println("Waiting up to 5 minutes to pull URLs...")
 
-	fmt.Println("done")
+	select {
+	case <-chanUpdateURL:
+		break
+	case <-time.After(5 * time.Minute):
+		servLoggerINFO.Println("Unable to complete pulling URL list")
+		break
+	}
+
 	http.HandleFunc(url, decodeURL)
-	go fmt.Println(http.ListenAndServe(":8080", nil))
+	go servLoggerINFO.Println(http.ListenAndServe(":8080", nil))
 
 }
 
 func updateURL(db *sql.DB) {
 	for {
-		chanUpdateURL <- true
 
-		fmt.Println("Collecting webpages...")
+		servLoggerINFO.Println("Collecting webpages...")
 		rows, err := db.Query("select appname, pageurl, urlfunction from app.url")
 		if err != nil {
 			log.Fatal(err)
@@ -54,11 +72,17 @@ func updateURL(db *sql.DB) {
 				log.Fatal(err)
 			}
 
-			fmt.Println(app, url)
+			servLoggerINFO.Println(app, url)
 		}
+
+		chanUpdateURL <- true
+		servLoggerINFO.Println("Done pulling URLs.")
+		time.Sleep(15 * time.Minute)
 	}
 }
 
 func decodeURL(resp http.ResponseWriter, req *http.Request) {
+	servLoggerINFO.Println("Loading webpage request.")
+	http.ServeFile(resp, req, "logs/webServ.log")
 
 }
