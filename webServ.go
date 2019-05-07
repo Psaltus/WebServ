@@ -2,20 +2,32 @@ package main
 
 import (
 	"database/sql"
+	"fmt"
+	"html/template"
 	"log"
 	"net/http"
 	"os"
 	"time"
-	"html/template"
 
 	_ "github.com/go-sql-driver/mysql"
 )
 
 var (
-	app      string
-	url      string
+	app string
+	url string
 	// function string
+	homeTempl *template.Template
+	testTempl *template.Template
 )
+
+type homeDataType struct {
+	Title       string
+	HeaderTitle string
+	Body        string
+}
+
+var homeData homeDataType
+var testData homeDataType
 
 var chanUpdateURL = make(chan bool)
 
@@ -53,13 +65,14 @@ func main() {
 	}
 
 	servLoggerINFO.Println("Setting up web templates...")
-	homeTempl := template.New("homeTempl")
-
+	homeTempl = template.New("homeTempl")
+	testTempl = template.New("testTempl")
 
 	// List of available URLs
 	http.HandleFunc("/", homeFunc)
 	http.HandleFunc("/test", testFunc)
-	go servLoggerINFO.Println(http.ListenAndServe(":8080", nil))
+	/*go*/ servLoggerINFO.Println(http.ListenAndServe(":8080", nil))
+	//TODO: Set ListenAndServe to goroutine, insert CLI with instructional commands.
 
 }
 
@@ -67,39 +80,67 @@ func updateURL(db *sql.DB) {
 	for {
 
 		servLoggerINFO.Println("Collecting webpages...")
-		rows, err := db.Query("select appname, pageurl from app.url")
+		rows, err := db.Query("select title, headertitle, body from app.pageoutput")
 		if err != nil {
 			log.Fatal(err)
 		}
 		defer db.Close()
 
+		// fmt.Println(rows)
+
 		// i := 0
 
+		// Setup page data
 		for rows.Next() {
-			err := rows.Scan(&app, &url)
-
+			err = rows.Scan(&homeData.Title, &homeData.HeaderTitle, &homeData.Body)
 			if err != nil {
 				log.Fatal(err)
 			}
 
-			servLoggerINFO.Println(app, url)
+			//servLoggerINFO.Println(homeData)
+			fmt.Println(homeData)
 
+			rows.Next()
+
+			err = rows.Scan(&testData.Title, &testData.HeaderTitle, &testData.Body)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			fmt.Println(testData)
+			break
 		}
 
 		chanUpdateURL <- true
 		servLoggerINFO.Println("Done pulling URLs.")
-		time.Sleep(15 * time.Minute)
+		time.Sleep(1 * time.Minute)
 	}
 }
 
 func homeFunc(resp http.ResponseWriter, req *http.Request) {
-	
+
 	servLoggerINFO.Println("Loading webpage request.")
-	http.ServeFile(resp, req, "logs/webServ.log")
+	//http.ServeFile(resp, req, "logs/webServ.log")
+	homeTempl, err := template.ParseFiles("index.html")
+	if err != nil {
+		log.Fatal("Failed to parse index.html")
+	}
+	servLoggerINFO.Println("Executing template")
+
+	//homeData.Body = template.HTMLEscapeString(homeData.Body)
+
+	homeTempl.Execute(resp, homeData)
 
 }
 
-func testFunc(resp http.ResponseWriter, req *http.Request)  {
+func testFunc(resp http.ResponseWriter, req *http.Request) {
 	servLoggerINFO.Println("Loading test webpageURL")
-	http.ServeFile(resp, req, "logs/webServ.log")
+	// http.ServeFile(resp, req, "logs/webServ.log")
+
+	testTempl, err := template.ParseFiles("test.html")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	testTempl.Execute(resp, template.HTML())
 }
