@@ -121,6 +121,7 @@ func homeFunc(resp http.ResponseWriter, req *http.Request) {
 
 	servLoggerINFO.Println("Loading webpage request.")
 	//http.ServeFile(resp, req, "logs/webServ.log")
+	//return
 	homeTempl, err := template.ParseFiles("index.html")
 	if err != nil {
 		log.Fatal("Failed to parse index.html")
@@ -128,7 +129,7 @@ func homeFunc(resp http.ResponseWriter, req *http.Request) {
 	servLoggerINFO.Println("Executing template")
 
 	//homeData.Body = template.HTMLEscapeString(homeData.Body)
-
+	// homeData.Title = "Example"
 	homeTempl.Execute(resp, homeData)
 
 }
@@ -142,5 +143,5 @@ func testFunc(resp http.ResponseWriter, req *http.Request) {
 		log.Fatal(err)
 	}
 
-	testTempl.Execute(resp, template.HTML())
+	testTempl.Execute(resp, nil)
 }
