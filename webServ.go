@@ -64,14 +64,18 @@ func main() {
 		break
 	}
 
-	servLoggerINFO.Println("Setting up web templates...")
-	homeTempl = template.New("homeTempl")
-	testTempl = template.New("testTempl")
+	servLoggerINFO.Println("Setting up static directory")
+	fs := http.FileServer(http.Dir("src"))
+	http.Handle("/src/", http.StripPrefix("/src/", fs))
+
+	// servLoggerINFO.Println("Setting up web templates...")
+	// homeTempl = template.New("homeTempl")
+	// testTempl = template.New("testTempl")
 
 	// List of available URLs
 	http.HandleFunc("/", homeFunc)
 	http.HandleFunc("/test", testFunc)
-	/*go*/ servLoggerINFO.Println(http.ListenAndServe(":8080", nil))
+	/*go*/ http.ListenAndServe(":8080", nil)
 	//TODO: Set ListenAndServe to goroutine, insert CLI with instructional commands.
 
 }
@@ -104,7 +108,7 @@ func updateURL(db *sql.DB) {
 
 			err = rows.Scan(&testData.Title, &testData.HeaderTitle, &testData.Body)
 			if err != nil {
-				log.Fatal(err)
+				break
 			}
 
 			fmt.Println(testData)
