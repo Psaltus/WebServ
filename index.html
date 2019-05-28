@@ -14,15 +14,20 @@
         <link rel="stylesheet" href="">
         <script src="/src/scripts/jquery-3.4.1.min.js"></script>
         <script src="/src/scripts/homepage.js"></script>
+        <script>
+            function notify() {
+                alert( "clicked" );
+            }
+            $( "button" ).on( "click", notify);
+        </script>
     </head>
     <body>
         <!--[if lt IE 7]>
             <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="#">upgrade your browser</a> to improve your experience.</p>
         <![endif]-->
 
-        This is a test template. Please check the title to see if it properly shows
+        <button>Test</button>
         <h1>{{ .HeaderTitle }}</h1>
-        <body>{{ .Body }}</body>
-        
+        <p>{{ .Body }}</p>
     </body>
 </html>
