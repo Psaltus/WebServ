@@ -80,6 +80,7 @@ func main() {
 
 }
 
+//FIXME: func name no longer matches use-case, need refactor
 func updateURL(db *sql.DB) {
 	for {
 
@@ -94,7 +95,7 @@ func updateURL(db *sql.DB) {
 
 		// i := 0
 
-		// Setup page data
+		// Setup page data TODO: fix database parsing
 		for rows.Next() {
 			err = rows.Scan(&homeData.Title, &homeData.HeaderTitle, &homeData.Body)
 			if err != nil {

@@ -11,15 +11,10 @@
         <title>This is a title: {{ .Title }}</title>
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="stylesheet" href="">
-        <script src="/src/scripts/jquery-3.4.1.min.js"></script>
+        <link rel="stylesheet" href="/src/scripts/homepage.css">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
         <script src="/src/scripts/homepage.js"></script>
-        <script>
-            function notify() {
-                alert( "clicked" );
-            }
-            $( "button" ).on( "click", notify);
-        </script>
+        <script src="/src/scripts/testing.js"></script>
     </head>
     <body>
         <!--[if lt IE 7]>
@@ -27,7 +22,9 @@
         <![endif]-->
 
         <button>Test</button>
+        <div id="main">
         <h1>{{ .HeaderTitle }}</h1>
-        <p>{{ .Body }}</p>
+        <p style="display: none" id="mainbody">{{ .Body }}</p>
+        </div>
     </body>
 </html>
