@@ -1,0 +1,11 @@
+#main {
+    margin: auto;
+    width: 50%;
+    border: 3px solid green;
+    padding: 0px;
+    display: block;
+}
+
+.testtitle {
+    margin-top: 0%;
+}
